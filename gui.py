@@ -19,21 +19,49 @@ class GREG:
             reader = csv.reader(f)
             return [row for row in reader]
 
+    # def setupUI(self):
+    #     print(self.data[self.dataIndex])
+    #     self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex][0]+"/header.jpg")
+    #     self.imgLabel = Label(self.root, image=self.photoImage)
+    #     self.imgLabel.pack(side=TOP)
+
+    #     name = self.data[self.dataIndex][1]
+    #     self.nameLabel = Label(self.root, text=name)
+    #     self.nameLabel.pack(side=TOP)
+        
+
+    #     redButton = Button(self.root, text="<--", command=self.disliked, bg="red")
+    #     redButton.pack(side=LEFT)
+    #     greenButton = Button(self.root, text="-->", command=self.liked, bg="green")
+    #     greenButton.pack(side=RIGHT)
+
     def setupUI(self):
+        # Creating 3 Frames
+        left_frame = Frame(self.root, bg='white')
+        left_frame.pack(side=LEFT, expand=True, fill=BOTH)
+
+        center_frame = Frame(self.root, bg='white')
+        center_frame.pack(side=LEFT, expand=True, fill=BOTH)
+
+        right_frame = Frame(self.root, bg='white')
+        right_frame.pack(side=LEFT, expand=True, fill=BOTH)
+
         print(self.data[self.dataIndex])
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex][0]+"/header.jpg")
-        self.imgLabel = Label(self.root, image=self.photoImage)
+        self.imgLabel = Label(center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
 
         name = self.data[self.dataIndex][1]
-        self.nameLabel = Label(self.root, text=name)
+        self.nameLabel = Label(center_frame, text=name)
         self.nameLabel.pack(side=TOP)
         
 
-        redButton = Button(self.root, text="<--", command=self.disliked, bg="red")
-        redButton.pack(side=LEFT)
-        greenButton = Button(self.root, text="-->", command=self.liked, bg="green")
-        greenButton.pack(side=RIGHT)
+        redButton = Button(left_frame, text="<--", command=self.disliked, bg="red",height=14, width=5)
+        redButton.pack(anchor=N, expand=True)
+
+        greenButton = Button(right_frame, text="-->", command=self.liked, bg="green",height=14, width=5)
+        greenButton.pack(anchor=N, expand=True)
+
 
     def getImage(self, url):
         response = requests.get(url)
