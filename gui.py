@@ -46,8 +46,8 @@ class GREG:
         self.descLabel = Label(center_frame, text = wrapped_description)
         self.descLabel.pack(side=TOP)
 
-        self.rating = int(self.data[self.dataIndex][12]) - int(self.data[self.dataIndex][13])
-        self.ratingLabel = Label(center_frame, text = "Rating:" + str(self.rating))
+        self.rating = 100*int(self.data[self.dataIndex][12])/(int(self.data[self.dataIndex][12]) + int(self.data[self.dataIndex][13]))
+        self.ratingLabel = Label(center_frame, text = "Rating: %d%% Positive" %(self.rating))
         self.ratingLabel.pack(side=TOP)
 
         redButton = Button(left_frame, text="<--", command=self.disliked, bg="red",height=14, width=5)
@@ -75,7 +75,7 @@ class GREG:
         self.imgLabel.config(image=self.photoImage)
         self.nameLabel.config(text=self.data[self.dataIndex][1]) 
         self.descLabel.config(text=  "\n".join(textwrap.wrap(self.description[self.dataIndex][3], width=75)))
-        self.ratingLabel.config(text = "Rating:" + str(int(self.data[self.dataIndex][12]) - int(self.data[self.dataIndex][13])))
+        self.ratingLabel.config(text = "Rating: %d%% Positive" %(100*int(self.data[self.dataIndex][12])/(int(self.data[self.dataIndex][12]) + int(self.data[self.dataIndex][13]))))
 
 
 def main():
