@@ -1,0 +1,40 @@
+import csv
+import requests
+import json
+import pickle
+import numpy as np
+
+def main():
+    infile = open("Data\\UsersDict.pkl", "rb")
+    users = pickle.load(infile)
+    infile.close()
+
+    games = np.genfromtxt("Data\\steam.csv", delimiter=",", skip_header=1, usecols=0, encoding="utf-8")
+    gameLocDict = {}
+    for i in range(games.shape[0]):
+        gameLocDict[games[i]] = i
+
+    numNotPrivate = 0
+    for val in users.values():
+        if val != "Private":
+            numNotPrivate += 1
+    users2 = [(x, users[x]) for x in list(users)[20000:]]
+    userInteractions = np.zeros((numNotPrivate+1, games.shape[0] + 1))
+    userInteractions[0][1:] = games
+    i = 1
+    gameNotIn = 0
+    for user in users:
+        if users[user] != "Private":
+            for game in users[user]:
+                userInteractions[i][0] = user
+                if (game not in gameLocDict): 
+                    gameNotIn += 1
+                    break
+                userInteractions[i][gameLocDict[game] + 1] = 1
+            i += 1
+    np.savetxt("Data\\user_interactions.csv", userInteractions, delimiter=",", fmt="%d")
+
+
+
+if __name__ == "__main__":
+    main()
