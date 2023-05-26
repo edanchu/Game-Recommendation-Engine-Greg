@@ -59,7 +59,7 @@ def main():
     infile = open("Data\\UncheckedUsers.pkl", "rb")
     uncheckedUsers = pickle.load(infile)
     infile.close()
-    while len(users) < 25000:
+    while len(users) < 45000:
         while True:
             user = uncheckedUsers.pop(0)
             if user not in users:

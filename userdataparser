@@ -18,21 +18,19 @@ def main():
     for val in users.values():
         if val != "Private":
             numNotPrivate += 1
-    users2 = [(x, users[x]) for x in list(users)[20000:]]
     userInteractions = np.zeros((numNotPrivate+1, games.shape[0] + 1))
     userInteractions[0][1:] = games
     i = 1
-    gameNotIn = 0
+
     for user in users:
         if users[user] != "Private":
             for game in users[user]:
                 userInteractions[i][0] = user
                 if (game not in gameLocDict): 
-                    gameNotIn += 1
-                    break
+                    continue
                 userInteractions[i][gameLocDict[game] + 1] = 1
             i += 1
-    np.savetxt("Data\\user_interactions.csv", userInteractions, delimiter=",", fmt="%d")
+    # np.savetxt("Data\\user_interactions.csv", userInteractions, delimiter=",", fmt="%d")
 
 
 
