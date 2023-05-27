@@ -7,6 +7,7 @@ import os
 import sys
 import time
 import copy
+import pandas as pd
 
 def getGameInfo(game):
     response = requests.get("https://store.steampowered.com/api/appdetails/?appids="+game+"&filters=basic,developers,publishers,platforms,categories")
@@ -47,7 +48,7 @@ def main():
     users = pickle.load(infile)
     infile.close()
 
-    ###Be very careful wil regeneration. Will take ~10 hours. Make backup before doing so
+    ###Be very careful wil regeneration. Will take ~12 hours. Make backup before doing so
     DONOTCHANGETHISREGENERATE = False
     if (os.path.isfile("Data\\GameDictRaw.pkl") and not DONOTCHANGETHISREGENERATE):
         infile = open("Data\\GameDictRaw.pkl", "rb")
@@ -57,13 +58,16 @@ def main():
         gamesDict = {}
 
     gamesDictCopy = copy.deepcopy(gamesDict)
+    deleted = 0
     for game in gamesDictCopy:
         if (type(gamesDict[game]) == type(3)):
             del gamesDict[game]
+            deleted += 1
 
     
-    generateDict = False
+    generateDict = False if deleted == 0 else True
     if (generateDict):
+        print(deleted)
         gamesList = {}
         for user in users:
             if users[user] != "Private":
@@ -75,12 +79,12 @@ def main():
             game = str(game)
             if (game not in gamesDict):
                 res = getGameInfo(game)
-                if (type(res) == type(int)):
+                if (type(res) == type(3)):
                     print(res)
                     outfile = open("Data\\GameDictRaw.pkl", "wb")
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
-                    sys.exit()
+                    return(1)
                 if (res == "Not Game" or res == "Failure"):
                     print(str(len(gamesDict))+"/"+str(len(gamesList)), game, res)
                     continue
@@ -92,11 +96,11 @@ def main():
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
                 time.sleep(0.3)
-
+        print("finished regenerating")
         outfile = open("Data\\GameDictRaw.pkl", "wb")
         pickle.dump(gamesDict, outfile)
         outfile.close()
-    
+
     tagsList = []
     for game in gamesDict:
         for tag in gamesDict[game]["tags"]:
@@ -107,13 +111,80 @@ def main():
                 if (category["description"] not in tagsList):
                     tagsList.append(category["description"])
 
-    publisherList = []
+    tagLocs = {}
+    for index, tag in enumerate(tagsList):
+        tagLocs[tag] = index
+
+    publisherFrequencies = {}
     for game in gamesDict:
         for publisher in gamesDict[game]["publishers"]:
-            if (publisher not in publisherList):
-                publisherList.append(publisher)
+            if (publisher not in publisherFrequencies):
+                publisherFrequencies[publisher] = 1
+            else:
+                publisherFrequencies[publisher] += 1
 
-    a = 5
+    commonPublisherLocs = {}
+    i = 0
+    for publisher in publisherFrequencies:
+        if publisherFrequencies[publisher] > 2:
+            commonPublisherLocs[publisher] = i
+            i += 1
+
+
+    developerFrequencies = {}
+    for game in gamesDict:
+        if gamesDict[game]["developers"] is not None:
+            for dev in gamesDict[game]["developers"]:
+                if (dev not in developerFrequencies):
+                    developerFrequencies[dev] = 1
+                else:
+                    developerFrequencies[dev] += 1
+
+    commonDevLocs = {}
+    i = 0
+    for dev in developerFrequencies:
+        if developerFrequencies[dev] > 2:
+            commonDevLocs[dev] = i
+            i += 1
+
+    gameLocs = {}
+    for index, game in enumerate(gamesDict):
+        gameLocs[game] = index
+    
+    platformLocs = {"windows":0, "mac": 1, "linux": 2}
+    pubOffset = len(commonDevLocs)
+    platOffset = pubOffset + len(commonPublisherLocs)
+    tagOffset = platOffset + len(platformLocs)
+    gameFeatureMatrix = np.zeros((len(gamesDict), len(commonDevLocs) + len(commonPublisherLocs) + len(platformLocs) + len(tagLocs)), dtype=np.int8)
+    for game in gamesDict:
+        if gamesDict[game]["developers"] is not None:
+            for dev in gamesDict[game]["developers"]:
+                if dev in commonDevLocs:
+                    gameFeatureMatrix[gameLocs[game]][commonDevLocs[dev]] = 1
+        for publisher in gamesDict[game]["publishers"]:
+            if publisher in commonPublisherLocs:
+                gameFeatureMatrix[gameLocs[game]][commonPublisherLocs[publisher] + pubOffset] = 1
+        for platform in gamesDict[game]["platforms"]:
+            if gamesDict[game]["platforms"][platform] == True:
+                gameFeatureMatrix[gameLocs[game]][platformLocs[platform] + platOffset] = 1
+        for tag in gamesDict[game]["tags"]:
+            gameFeatureMatrix[gameLocs[game]][tagLocs[tag] + tagOffset] = 1
+        if (gamesDict[game]["categories"] is not None):
+            for category in gamesDict[game]["categories"]:
+                gameFeatureMatrix[gameLocs[game]][tagLocs[category["description"]] + tagOffset] = 1
+
+
+    colNames = list(commonDevLocs.keys())
+    colNames.extend(list(commonPublisherLocs.keys()))
+    colNames.extend(list(platformLocs.keys()))
+    colNames.extend(list(tagLocs.keys()))
+    gameFeatureMatrixDF = pd.DataFrame(data=gameFeatureMatrix, index=list(gameLocs.keys()), columns=colNames)
+
+    print("writing")
+    # gameFeatureMatrixDF.to_csv("Data\\gameFeatureMatrix.csv", sep=",")
+    outfile = open("Data\\gameFeatureMatrix.pkl", "wb")
+    pickle.dump(gameFeatureMatrixDF, outfile)
+    outfile.close()
     
 
 

@@ -3,36 +3,41 @@ import requests
 import json
 import pickle
 import numpy as np
+import pandas as pd
 
 def main():
     infile = open("Data\\UsersDict.pkl", "rb")
     users = pickle.load(infile)
     infile.close()
 
-    games = np.genfromtxt("Data\\steam.csv", delimiter=",", skip_header=1, usecols=0, encoding="utf-8")
+    # infile = open("Data\\GameFeatureMatrix.pkl")
+    gameFeatureMatrixDF = pd.read_pickle("Data\\GameFeatureMatrix.pkl")
+    # infile.close()
     gameLocDict = {}
-    for i in range(games.shape[0]):
-        gameLocDict[games[i]] = i
+    for i, game in enumerate(gameFeatureMatrixDF.index):
+        gameLocDict[game] = i
 
-    numNotPrivate = 0
-    for val in users.values():
-        if val != "Private":
-            numNotPrivate += 1
-    userInteractions = np.zeros((numNotPrivate+1, games.shape[0] + 1))
-    userInteractions[0][1:] = games
-    i = 1
-
-    for user in users:
-        if users[user] != "Private":
-            for game in users[user]:
-                userInteractions[i][0] = user
-                if (game not in gameLocDict): 
-                    continue
-                userInteractions[i][gameLocDict[game] + 1] = 1
+    userLocs = {}
+    i = 0
+    for user, status in users.items():
+        if status != "Private":
+            userLocs[user] = i
             i += 1
-    # np.savetxt("Data\\user_interactions.csv", userInteractions, delimiter=",", fmt="%d")
 
+    userInteractions = np.zeros((len(userLocs), len(gameLocDict)))
 
+    for user, loc in userLocs.items():
+        for game in users[user]:
+            if (game not in gameLocDict): 
+                continue
+            userInteractions[loc][gameLocDict[game]] = 1
+
+    userInteractionsDF = pd.DataFrame(data=userInteractions, columns = list(gameLocDict.keys()), index = list(userLocs.keys()))
+    print("writing")
+    # userInteractionsDF.to_csv("Data\\userInteractions.csv", sep=",")
+    outfile = open("Data\\userInteractions.pkl", "wb")
+    pickle.dump(userInteractionsDF, outfile)
+    outfile.close()
 
 if __name__ == "__main__":
     main()

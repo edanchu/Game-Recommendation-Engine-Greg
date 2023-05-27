@@ -3,3 +3,7 @@ Data/key
 Data/user_interactions.csv
 Data/GameDictRaw - Copy 24k 429 errors.pkl
 Data/GameDictRaw - Copy.pkl
+Data/gameFeatureMatrix.csv
+Data/gameFeatureMatrix.pkl
+Data/gameFeatureMatrix - Copy.pkl
+Data/userInteractions.pkl
