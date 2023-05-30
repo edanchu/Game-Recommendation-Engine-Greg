@@ -6,6 +6,12 @@ import time
 import copy
 import pandas as pd
 
+#Creates a dictionary that maps steam appids to game information (GameDictRaw.pkl) as well as a game feature matrix (gameFeatureMatrix.pkl of pandas dataframe)
+#that contains a one-hot encoding for tags, top publishers and devs, and platform availability
+#Information available in the main dictionary is: appid, name, is_free, about_the_game, header_image,
+#developers, publishers, platforms, categories (steam), tags (steamspy), number of positive and negative steam reviews,
+#owners, and median_playtime
+
 def getGameInfo(game):
     response = requests.get("https://store.steampowered.com/api/appdetails/?appids="+game+"&filters=basic,developers,publishers,platforms,categories")
     if (response.status_code != 200):
@@ -39,13 +45,14 @@ def getGameInfo(game):
 
 
 
-
+#Uses cached database and dumps every 50 updates
 def main():
     infile = open("Data\\UsersDict.pkl", "rb")
     users = pickle.load(infile)
     infile.close()
 
-    ###Be very careful wil regeneration. Will take ~12 hours. Make backup before doing so
+    ###Be very careful with regeneration. Will take ~12 hours. Make backup before doing so
+    ###Changing this will flush the cache and restart gathering data about all games from scratch
     DONOTCHANGETHISREGENERATE = False
     if (os.path.isfile("Data\\GameDictRaw.pkl") and not DONOTCHANGETHISREGENERATE):
         infile = open("Data\\GameDictRaw.pkl", "rb")
@@ -54,6 +61,7 @@ def main():
     else:
         gamesDict = {}
 
+    #Create a copy and remove all invalid game data
     gamesDictCopy = copy.deepcopy(gamesDict)
     deleted = 0
     for game in gamesDictCopy:
@@ -61,10 +69,11 @@ def main():
             del gamesDict[game]
             deleted += 1
 
-    
+    #If there was any invalid game data regenerate the dictionary for missing data
     generateDict = False if deleted == 0 else True
     if (generateDict):
         print(deleted)
+        #create a list of games for which to download information based on what games our users own
         gamesList = {}
         for user in users:
             if users[user] != "Private":
@@ -76,28 +85,36 @@ def main():
             game = str(game)
             if (game not in gamesDict):
                 res = getGameInfo(game)
+                #If an error code was returned from getGameInfo, dump current valid data and exit
                 if (type(res) == type(3)):
                     print(res)
                     outfile = open("Data\\GameDictRaw.pkl", "wb")
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
                     return(1)
+                #If the app is not a game or has been removed from the steam store don't add it to our dictionary
                 if (res == "Not Game" or res == "Failure"):
                     print(str(len(gamesDict))+"/"+str(len(gamesList)), game, res)
                     continue
+                #If no error add game info to the dict
                 else: print(str(len(gamesDict))+"/"+str(len(gamesList)), game)
                 gamesDict[game] = res
+
+                #Dump the dict data every 50 iterations so not much data is lost on an error
                 if (len(gamesDict)%50 == 0):
                     print("dumping")
                     outfile = open("Data\\GameDictRaw.pkl", "wb")
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
+                #sleep so that steam api doesn't block your ip
                 time.sleep(0.3)
         print("finished regenerating")
         outfile = open("Data\\GameDictRaw.pkl", "wb")
         pickle.dump(gamesDict, outfile)
         outfile.close()
 
+    #create a list of all tags that have been applied to games in our dictionary
+    #some tags are from steamspy and some are from steam, so this grabs both
     tagsList = []
     for game in gamesDict:
         for tag in gamesDict[game]["tags"]:
@@ -108,10 +125,12 @@ def main():
                 if (category["description"] not in tagsList):
                     tagsList.append(category["description"])
 
+    #indexes tags
     tagLocs = {}
     for index, tag in enumerate(tagsList):
         tagLocs[tag] = index
 
+    #Calculate how many times each publisher is in our dataset
     publisherFrequencies = {}
     for game in gamesDict:
         for publisher in gamesDict[game]["publishers"]:
@@ -120,6 +139,7 @@ def main():
             else:
                 publisherFrequencies[publisher] += 1
 
+    #Remove any publisher that has only published one or two games, since they don't provide much info
     commonPublisherLocs = {}
     i = 0
     for publisher in publisherFrequencies:
@@ -127,7 +147,7 @@ def main():
             commonPublisherLocs[publisher] = i
             i += 1
 
-
+    #same as above, but for devs instead of publishers
     developerFrequencies = {}
     for game in gamesDict:
         if gamesDict[game]["developers"] is not None:
@@ -144,15 +164,19 @@ def main():
             commonDevLocs[dev] = i
             i += 1
 
+    #indexes the games
     gameLocs = {}
     for index, game in enumerate(gamesDict):
         gameLocs[game] = index
     
+    #creates offsets for each piece of data added to the game feature matrix so that values can be inserted into the right place
+    #the order of the data is {devs, publishers, platforms, tags}
     platformLocs = {"windows":0, "mac": 1, "linux": 2}
     pubOffset = len(commonDevLocs)
     platOffset = pubOffset + len(commonPublisherLocs)
     tagOffset = platOffset + len(platformLocs)
     gameFeatureMatrix = np.zeros((len(gamesDict), len(commonDevLocs) + len(commonPublisherLocs) + len(platformLocs) + len(tagLocs)), dtype=np.int8)
+    #inserts data into the matrix for each game
     for game in gamesDict:
         if gamesDict[game]["developers"] is not None:
             for dev in gamesDict[game]["developers"]:
@@ -171,6 +195,7 @@ def main():
                 gameFeatureMatrix[gameLocs[game]][tagLocs[category["description"]] + tagOffset] = 1
 
 
+    #creates column names for the pandas dataframe based on the insertion order of data from above
     colNames = list(commonDevLocs.keys())
     colNames.extend(list(commonPublisherLocs.keys()))
     colNames.extend(list(platformLocs.keys()))

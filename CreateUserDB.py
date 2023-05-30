@@ -12,6 +12,10 @@ import pickle
 ##DO NOT RUN THIS!!!!!!##
 ##DO NOT RUN THIS!!!!!!##
 
+#Runs a recursive search over steam to gather user friends list and games played data
+#requires a steam api key to be in a file called key in the Data directory. This file is not in the github
+#I'm not gonna comment this file further since noone should need to run it
+
 def getFriends(key, user):
     response = requests.get("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key="+key+"&steamid="+user+"&relationship=all")
     if response.status_code == 403:

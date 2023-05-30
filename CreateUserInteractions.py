@@ -2,7 +2,17 @@ import pickle
 import numpy as np
 import pandas as pd
 
+#Generates the user interaction matrices for use in matrix factorization. Sparse matrix is of the form
+# User, Game, Rating. Dense matrix has one row per use and one column per game where the value for a cell is the rating a player
+#gave to that game, or 0 if no interaction
+#Ratings are estimated based on the technique here https://www.researchgate.net/publication/330249306_Estimated_Rating_Based_on_Hours_Played_for_Video_Game_Recommendation
+
+
 def getCleanData(usersData, gameLocDict):
+    #cleans out useless data from the database
+    #removes top 2% of players by playtime for each game to get rid of outliers
+    #removes all games that appear less than 20 times or have a sum total of less than 300 hours played
+    #over all players
     userGameHours = []
     gameHours = {}
     gameCounts = {}
@@ -52,18 +62,24 @@ def main():
     cleanData = getCleanData(users, gameLocs)
     groupedByUser = cleanData.groupby(by="user").apply(lambda x: x)
 
+    #index games
     gameLocs = {}
     for i, game in enumerate(cleanData["game"].unique()):
         gameLocs[game] = i
 
+    #index users
     userLocs = {}
     for i, user in enumerate(cleanData["user"].unique()):
         userLocs[user] = i
 
     print("computing game statistics")
+    #dict of user -> total hours played accross all games
     userHours = {}
+    #dict of game -> total hours played accross all players of this game
     gameHours = {}
+    #dict of game -> list of (user, hours) for all players of this game
     gameUserLists = {}
+    #list of all interactions between users and games
     userGameInteractionsList = []
     for user in userLocs:
         for game, hours in groupedByUser.loc[user][["game","hours"]].values:
@@ -76,9 +92,11 @@ def main():
             userGameInteractionsList.append((user, game))
 
     print("computing frequencies")
+    #sort the users of each game by time played
     for game in gameUserLists:
         gameUserLists[game] = sorted(gameUserLists[game], key=lambda item:item[1], reverse=True)
 
+    #Pre-calculate the frequency metric (from paper in header) for every user and every game
     gameFrequencyLists = {}
     for game, sortedUsers in gameUserLists.items():
         gameFrequencyLists[game] = [hours/gameHours[game] if gameHours[game] > 0 else 0 for user, hours in sortedUsers]
@@ -89,6 +107,7 @@ def main():
 
     print("computing dense interactions")
     i = 0
+    #Compute user ratings and add them to the two output matrices
     for user, loc in userLocs.items():
         for game, hours in groupedByUser.loc[user][["game","hours"]].values:
             k = gameUserLists[game].index((user, hours))
