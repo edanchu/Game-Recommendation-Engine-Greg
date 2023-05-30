@@ -1,10 +1,7 @@
-import csv
 import requests
-import json
 import pickle
 import numpy as np
 import os
-import sys
 import time
 import copy
 import pandas as pd
@@ -178,7 +175,7 @@ def main():
     colNames.extend(list(commonPublisherLocs.keys()))
     colNames.extend(list(platformLocs.keys()))
     colNames.extend(list(tagLocs.keys()))
-    gameFeatureMatrixDF = pd.DataFrame(data=gameFeatureMatrix, index=list(gameLocs.keys()), columns=colNames)
+    gameFeatureMatrixDF = pd.DataFrame(data=gameFeatureMatrix, index=map(int,list(gameLocs.keys())), columns=colNames)
 
     print("writing")
     # gameFeatureMatrixDF.to_csv("Data\\gameFeatureMatrix.csv", sep=",")

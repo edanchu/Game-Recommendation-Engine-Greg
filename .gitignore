@@ -7,3 +7,6 @@ Data/gameFeatureMatrix.csv
 Data/gameFeatureMatrix.pkl
 Data/gameFeatureMatrix - Copy.pkl
 Data/userInteractions.pkl
+Data/userInteractionsDense.pkl
+Data/userInteractionsSparse.pkl
+test.ipynb
