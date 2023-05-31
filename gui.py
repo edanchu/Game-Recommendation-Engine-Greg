@@ -3,6 +3,24 @@ import requests
 from io import BytesIO
 from PIL import ImageTk, Image
 import pickle
+from html.parser import HTMLParser
+
+class HTMLStripper(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.reset()
+        self.fed = []
+
+    def handle_data(self, data):
+        self.fed.append(data)
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_html(html):
+    html_stripper = HTMLStripper()
+    html_stripper.feed(html)
+    return html_stripper.get_data()
 
 class GREG:
     def __init__(self, root, pickle_file):
@@ -38,13 +56,17 @@ class GREG:
         self.nameLabel = Label(center_frame, text=self.name)
         self.nameLabel.pack(side=TOP)
 
-        # self.description = self.get_game_description(self.data[self.dataIndex])
-        # self.descriptionLabel = Label(center_frame, text=self.description)
-        # self.descriptionLabel.pack(side=TOP)
+        scroll = Scrollbar(center_frame)
+        scroll.pack(side=RIGHT, fill=Y)
 
-        self.stars = [Button(stars_frame, text="★", fg="grey") for i in range(5)]
+        self.descriptionText = Text(center_frame, wrap=WORD, yscrollcommand=scroll.set, height= 7, width = 70)
+        self.description = self.get_game_description(self.data[self.dataIndex])
+        self.descriptionText.insert(INSERT, self.description)
+        self.descriptionText.pack(side=TOP)
+
+        self.stars = [Button(stars_frame, text=" ★ ", fg="grey") for i in range(5)]
         for i in range(5):
-            self.stars[i].pack(side=LEFT, padx=10)
+            self.stars[i].pack(side=LEFT, padx=5)
             self.stars[i].bind("<Enter>", lambda e, i=i: self.hover(i))
             self.stars[i].bind("<Leave>", lambda e: self.reset())
             self.stars[i].bind("<Button-1>", lambda e, i=i: self.click(i))
@@ -62,7 +84,8 @@ class GREG:
         response = requests.get(url)
         data = response.json()
         if data[str(app_id)]['success']:
-            return data[str(app_id)]['data']['about_the_game']
+            desc_html = data[str(app_id)]['data']['about_the_game']
+            return strip_html(desc_html)
         else:
             return None
 
@@ -81,19 +104,23 @@ class GREG:
 
     def click(self, star_num):
         print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
-        self.updateImage()
+        self.update()
 
-    def updateImage(self):
+    def update(self):
         self.dataIndex += 1
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
         self.imgLabel.config(image=self.photoImage)
         self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
-        # self.descriptionLabel.config(text = self.get_game_description(self.data[self.dataIndex]))
+        self.descriptionText.delete('1.0', END)  # clear the existing description
+        self.description = self.get_game_description(self.data[self.dataIndex])
+        self.descriptionText.insert(INSERT, self.description)
+        self.descriptionText.pack(side=TOP)
 
+ 
 def main():
     root = Tk()
     root.minsize(550,200)
-    root.maxsize(550,500)
+    root.maxsize(550,1000)
     steamInfo = "Data\GameDictRaw.pkl"
     GREG(root, steamInfo)
     root.mainloop()
