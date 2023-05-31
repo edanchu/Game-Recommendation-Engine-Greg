@@ -34,12 +34,37 @@ class GREG:
         self.imgLabel = Label(center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
 
+        self.name = self.get_game_name(self.data[self.dataIndex])
+        self.nameLabel = Label(center_frame, text=self.name)
+        self.nameLabel.pack(side=TOP)
+
+        # self.description = self.get_game_description(self.data[self.dataIndex])
+        # self.descriptionLabel = Label(center_frame, text=self.description)
+        # self.descriptionLabel.pack(side=TOP)
+
         self.stars = [Button(stars_frame, text="★", fg="grey") for i in range(5)]
         for i in range(5):
             self.stars[i].pack(side=LEFT, padx=10)
             self.stars[i].bind("<Enter>", lambda e, i=i: self.hover(i))
             self.stars[i].bind("<Leave>", lambda e: self.reset())
             self.stars[i].bind("<Button-1>", lambda e, i=i: self.click(i))
+    
+    def get_game_name(self, app_id):
+        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+        response = requests.get(url)
+        data = response.json()
+        if data[str(app_id)]['success']:
+            return data[str(app_id)]['data']['name']
+        else:
+            return None
+    def get_game_description(self, app_id):
+        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
+        response = requests.get(url)
+        data = response.json()
+        if data[str(app_id)]['success']:
+            return data[str(app_id)]['data']['about_the_game']
+        else:
+            return None
 
     def getImage(self, url):
         response = requests.get(url)
@@ -62,6 +87,8 @@ class GREG:
         self.dataIndex += 1
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
         self.imgLabel.config(image=self.photoImage)
+        self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
+        # self.descriptionLabel.config(text = self.get_game_description(self.data[self.dataIndex]))
 
 def main():
     root = Tk()
