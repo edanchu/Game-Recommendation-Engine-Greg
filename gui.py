@@ -1,93 +1,75 @@
-import csv
 from tkinter import *
 import requests
 from io import BytesIO
 from PIL import ImageTk, Image
-import numpy as np
-import textwrap
-
+import pickle
 
 class GREG:
-    def __init__(self, root, csv_file, description):
+    def __init__(self, root, pickle_file):
         self.dataIndex = 1
-        self.rating = 0
         self.photoImage = None
         self.imgLabel = None
         self.root = root
-        self.data = self.read_csv(csv_file)  
-        self.description = self.read_csv(description)
+        self.data = self.read_pickle(pickle_file)  
         self.setupUI()
 
-    def read_csv(self, csv_file):
-        with open(csv_file, 'r', encoding='utf-8') as f:
-            reader = csv.reader(f)
-            return [row for row in reader]
+    def read_pickle(self, pickle_file):
+        infile = open(pickle_file, "rb")
+        gamesDict = pickle.load(infile)
+        infile.close()
+        return [row for row in gamesDict]
 
     def setupUI(self):
-        left_frame = Frame(self.root)
-        left_frame.pack(side=LEFT, expand=False, fill=BOTH)
-
         center_frame = Frame(self.root)
-        center_frame.pack(side=LEFT, expand=False, fill=BOTH)
+        center_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        right_frame = Frame(self.root)
-        right_frame.pack(side=LEFT, expand=False, fill=BOTH)
+        rating_frame = Frame(self.root)
+        rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
 
-        self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex][0]+"/header.jpg")
+        # Inner frame to hold the stars
+        stars_frame = Frame(rating_frame)
+        stars_frame.pack(expand=True)
+
+        self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
         self.imgLabel = Label(center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
 
-        name = self.data[self.dataIndex][1]
-        self.nameLabel = Label(center_frame, text=name)
-        self.nameLabel.pack(side=TOP)
-        
-        description = self.description[self.dataIndex][3]
-        wrapped_description = "\n".join(textwrap.wrap(description, width=75))
-        self.descLabel = Label(center_frame, text = wrapped_description)
-        self.descLabel.pack(side=TOP)
-
-        self.rating = 100*int(self.data[self.dataIndex][12])/(int(self.data[self.dataIndex][12]) + int(self.data[self.dataIndex][13]))
-        self.ratingLabel = Label(center_frame, text = "Rating: %d%% Positive" %(self.rating))
-        self.ratingLabel.pack(side=TOP)
-
-        redButton = Button(left_frame, text="<--", command=self.disliked, bg="red",height=14, width=5)
-        redButton.pack(anchor=N, expand=True)
-
-        greenButton = Button(right_frame, text="-->", command=self.liked, bg="green",height=14, width=5)
-        greenButton.pack(anchor=N, expand=True)
-
+        self.stars = [Button(stars_frame, text="★", fg="grey") for i in range(5)]
+        for i in range(5):
+            self.stars[i].pack(side=LEFT, padx=10)
+            self.stars[i].bind("<Enter>", lambda e, i=i: self.hover(i))
+            self.stars[i].bind("<Leave>", lambda e: self.reset())
+            self.stars[i].bind("<Button-1>", lambda e, i=i: self.click(i))
 
     def getImage(self, url):
         response = requests.get(url)
         img = Image.open(BytesIO(response.content))
         return ImageTk.PhotoImage(img)
 
-    def liked(self):
-        self.dataIndex = (self.dataIndex + 1) % len(self.data)
-        self.updateImage()
+    def hover(self, star_num):
+        for i in range(star_num + 1):
+            self.stars[i].config(fg="orange")
 
-    def disliked(self):
-        self.dataIndex = (self.dataIndex + 1) % len(self.data)
+    def reset(self):
+        for star in self.stars:
+            star.config(fg="grey")
+
+    def click(self, star_num):
+        print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
         self.updateImage()
 
     def updateImage(self):
-        self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex][0]+"/header.jpg")
+        self.dataIndex += 1
+        self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
         self.imgLabel.config(image=self.photoImage)
-        self.nameLabel.config(text=self.data[self.dataIndex][1]) 
-        self.descLabel.config(text=  "\n".join(textwrap.wrap(self.description[self.dataIndex][3], width=75)))
-        self.ratingLabel.config(text = "Rating: %d%% Positive" %(100*int(self.data[self.dataIndex][12])/(int(self.data[self.dataIndex][12]) + int(self.data[self.dataIndex][13]))))
-
 
 def main():
     root = Tk()
     root.minsize(550,200)
     root.maxsize(550,500)
-    steamInfo = "Data\steam.csv"
-    descriptionInfo = "Data\steam_description_data.csv"
-
-    GREG(root, steamInfo,descriptionInfo)
+    steamInfo = "Data\GameDictRaw.pkl"
+    GREG(root, steamInfo)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
