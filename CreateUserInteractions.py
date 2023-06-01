@@ -16,26 +16,31 @@ def getCleanData(usersData, gameLocDict):
     userGameHours = []
     gameHours = {}
     gameCounts = {}
+    userHours = {}
     for user, data in usersData.items():
         if data == "Private": continue
         for game, hours in data.items():
             if(game not in gameLocDict): continue
             if (game not in gameHours): gameHours[game] = 0
             if (game not in gameCounts): gameCounts[game] = 0
+            if (user not in userHours): userHours[user] = 0
             gameCounts[game] += 1
             gameHours[game] += hours
+            userHours[user] += hours
     for user, data in usersData.items():
         if data == "Private": continue
+        if userHours[user] == 0: continue
         for game, hours in data.items():
             if(game not in gameLocDict or gameHours[game] < 300 or gameCounts[game] < 20): continue
-            userGameHours.append((user, game, hours/60))
+            userGameHours.append((user, game, hours))
     df = pd.DataFrame(data=userGameHours, index=range(len(userGameHours)), columns=["user", "game", "hours"], dtype=pd.Int64Dtype)
     def Remove_Outlier_Indices(df):
         # Q1 = np.percentile(df, 0.25)
         # Q3 = np.percentile(df, 0.75)
         # IQR = Q3 - Q1
-        # dropList = (df > (Q3 + 1.5 * IQR))
-        return df < np.percentile(df, 90)
+        # dropList = ((df < (Q1 - 2.5 * IQR)) |(df > (Q3 + 2.5 * IQR)))
+        return df < np.percentile(df, 95)
+        # return ~dropList
 
     grouped = df[["game", "hours"]].groupby(by="game")
     res = grouped.apply(Remove_Outlier_Indices)
@@ -72,13 +77,14 @@ def main():
     for i, user in enumerate(cleanData["user"].unique()):
         userLocs[user] = i
 
-    print("computing game statistics")
+    print("computing statistics")
     #dict of user -> total hours played accross all games
     userHours = {}
     #dict of game -> total hours played accross all players of this game
     gameHours = {}
     #dict of game -> list of (user, hours) for all players of this game
     gameUserLists = {}
+    userGameLists = {}
     #list of all interactions between users and games
     userGameInteractionsList = []
     for user in userLocs:
@@ -86,21 +92,31 @@ def main():
             if (game not in gameHours): gameHours[game] = 0
             if(game not in gameUserLists): gameUserLists[game] = []
             if (user not in userHours): userHours[user] = 0
+            if (user not in userGameLists): userGameLists[user] = []
             userHours[user] += hours
             gameHours[game] += hours
             gameUserLists[game].append((user, hours))
             userGameInteractionsList.append((user, game))
+            userGameLists[user].append((game, hours))
 
     print("computing frequencies")
     #sort the users of each game by time played
     for game in gameUserLists:
         gameUserLists[game] = sorted(gameUserLists[game], key=lambda item:item[1], reverse=True)
 
-    #Pre-calculate the frequency metric (from paper in header) for every user and every game
+    for user in userGameLists:
+        userGameLists[user] = sorted(userGameLists[user], key=lambda item:item[1], reverse=True)
+
+    # Pre-calculate the frequency metric (from paper in header) for every user and every game
     gameFrequencyLists = {}
     for game, sortedUsers in gameUserLists.items():
         gameFrequencyLists[game] = [hours/gameHours[game] if gameHours[game] > 0 else 0 for user, hours in sortedUsers]
         gameFrequencyLists[game] = np.cumsum(gameFrequencyLists[game])
+
+    userFrequencyLists = {}
+    for user, sortedGames in userGameLists.items():
+        userFrequencyLists[user] = [hours/userHours[user] if userHours[user] > 0 else 0 for game, hours in sortedGames]
+        userFrequencyLists[user] = np.cumsum(userFrequencyLists[user])
 
     userInteractionsDense = np.zeros((len(userLocs), len(gameLocs)))
     userInteractionsSparse = np.zeros((len(userGameInteractionsList), 3))
@@ -111,12 +127,15 @@ def main():
     for user, loc in userLocs.items():
         for game, hours in groupedByUser.loc[user][["game","hours"]].values:
             k = gameUserLists[game].index((user, hours))
-            kSum = gameFrequencyLists[game][k]
-            rating = 4*(1-kSum) + 1
-            userInteractionsDense[loc][gameLocs[game]] = rating
+            kSum = gameFrequencyLists[game][k-1] if k> 0  else 0
+            rating = max(4*(1-kSum) + 1, 1)
+            k2 = userGameLists[user].index((game, hours))
+            kSum2 = userFrequencyLists[user][k2-1] if k2 > 0 else 0
+            rating2 = max(4*(1-kSum2), 0) + 1
+            userInteractionsDense[loc][gameLocs[game]] = (1*rating)+(0*rating2)
             userInteractionsSparse[i][0] = user
             userInteractionsSparse[i][1] = game
-            userInteractionsSparse[i][2] = rating
+            userInteractionsSparse[i][2] = (1*rating)+(0*rating2)
             i += 1
 
     userInteractionsDF = pd.DataFrame(data=userInteractionsDense, columns = list(gameLocs.keys()), index = map(int,list(userLocs.keys())))
