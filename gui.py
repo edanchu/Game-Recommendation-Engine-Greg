@@ -4,6 +4,7 @@ from io import BytesIO
 from PIL import ImageTk, Image
 import pickle
 from html.parser import HTMLParser
+import CreateGameDB as game
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -27,14 +28,20 @@ class GREG:
         self.dataIndex = 1
         self.photoImage = None
         self.imgLabel = None
+        self.developerLabel = None
+        self.gameInfo = None
+        self.publisherLabel = None
+        self.positiveReviewsLabel = None
         self.root = root
         self.data = self.read_pickle(pickle_file)  
+        
         self.setupUI()
 
     def read_pickle(self, pickle_file):
         infile = open(pickle_file, "rb")
         gamesDict = pickle.load(infile)
         infile.close()
+        self.gameInfo = gamesDict
         return [row for row in gamesDict]
 
     def setupUI(self):
@@ -56,6 +63,17 @@ class GREG:
         self.nameLabel = Label(center_frame, text=self.name)
         self.nameLabel.pack(side=TOP)
 
+        self.developer = self.get_game_developer(self.data[self.dataIndex])
+        self.developerLabel = Label(center_frame, text="Developer: " + self.developer)
+        self.developerLabel.pack(side=TOP)
+
+        self.publisher = self.get_game_publisher(self.data[self.dataIndex])
+        self.publisherLabel = Label(center_frame, text="Publisher: " + self.publisher)
+        self.publisherLabel.pack(side=TOP)
+        self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
+        self.positiveReviewsLabel = Label(center_frame, text="Positive Reviews: " + str(self.positiveReviews) + "%")
+        self.positiveReviewsLabel.pack(side=TOP)
+
         scroll = Scrollbar(center_frame)
         scroll.pack(side=RIGHT, fill=Y)
 
@@ -72,22 +90,25 @@ class GREG:
             self.stars[i].bind("<Button-1>", lambda e, i=i: self.click(i))
     
     def get_game_name(self, app_id):
-        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-        response = requests.get(url)
-        data = response.json()
-        if data[str(app_id)]['success']:
-            return data[str(app_id)]['data']['name']
-        else:
-            return None
+        return self.gameInfo[app_id]['name']
     def get_game_description(self, app_id):
-        url = f"https://store.steampowered.com/api/appdetails?appids={app_id}"
-        response = requests.get(url)
-        data = response.json()
-        if data[str(app_id)]['success']:
-            desc_html = data[str(app_id)]['data']['about_the_game']
-            return strip_html(desc_html)
+        return strip_html(self.gameInfo[app_id]['about_the_game'])
+    
+    def get_game_developer(self, app_id):
+        return ', '.join(self.gameInfo[app_id]["developers"])
+    
+    def get_game_publisher(self, app_id):
+        
+        return ', '.join(self.gameInfo[app_id]["publishers"])
+
+    def get_positive_review_percent(self, app_id):
+        positive = self.gameInfo[app_id]["positive_reviews"]
+        negative = self.gameInfo[app_id]["negative_reviews"]
+        total = positive + negative
+        if total > 0:
+            return round(positive / total * 100, 2)
         else:
-            return None
+            return 0
 
     def getImage(self, url):
         response = requests.get(url)
@@ -109,14 +130,28 @@ class GREG:
     def update(self):
         self.dataIndex += 1
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
+
         self.imgLabel.config(image=self.photoImage)
+
         self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
+
         self.descriptionText.delete('1.0', END)  # clear the existing description
         self.description = self.get_game_description(self.data[self.dataIndex])
         self.descriptionText.insert(INSERT, self.description)
         self.descriptionText.pack(side=TOP)
+        self.descriptionText.config(state= DISABLED)
 
- 
+        self.developer = self.get_game_developer(self.data[self.dataIndex])
+        self.developerLabel.config(text="Developer: " + self.developer)
+
+        self.publisher = self.get_game_publisher(self.data[self.dataIndex])
+        self.publisherLabel.config(text="Publisher: " + self.publisher)
+
+        self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
+        self.positiveReviewsLabel.config(text="Positive Reviews: " + str(self.positiveReviews) + "%")
+        
+
+
 def main():
     root = Tk()
     root.minsize(550,200)
