@@ -12,7 +12,7 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
 
     ui.loc[76561198229940716] = 0
     for game, score in interactionsSparse[["appid", "score"]].to_numpy():
-        ui.loc[76561198229940716][game] = score
+        ui.loc[76561198229940716][game] = score if score >= 3 else 0
 
     # loc2uid = dict(zip(range(len(ui.index.tolist())), ui.index.tolist()))
     uid2loc = dict(zip(ui.index.tolist(), range(len(ui.index.tolist()))))
