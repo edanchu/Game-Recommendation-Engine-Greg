@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import ttk
 import requests
 from io import BytesIO
 from PIL import ImageTk, Image
@@ -34,6 +35,9 @@ class GREG:
         self.gameInfo = None
         self.publisherLabel = None
         self.positiveReviewsLabel = None
+        self.center_frame = None
+        self.rating_frame = None
+        self.refresh_frame = None
         self.root = root
         self.data = self.read_pickle(pickle_file)  
         self.ratings_df = pd.DataFrame(columns=['uid', 'appid', 'score'])
@@ -48,46 +52,49 @@ class GREG:
         return [row for row in gamesDict]
 
     def setupUI(self):
-        center_frame = Frame(self.root)
-        center_frame.pack(side=TOP, expand=True, fill=BOTH)
+        self.center_frame = Frame(self.root)
+        self.center_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        rating_frame = Frame(self.root)
-        rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
+        self.rating_frame = Frame(self.root)
+        self.rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
 
-        stars_frame = Frame(rating_frame)
+        stars_frame = Frame(self.rating_frame)
         stars_frame.pack(expand=True)
 
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+self.data[self.dataIndex]+"/header.jpg")
-        self.imgLabel = Label(center_frame, image=self.photoImage)
+        self.imgLabel = Label(self.center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
 
         self.name = self.get_game_name(self.data[self.dataIndex])
-        self.nameLabel = Label(center_frame, text=self.name)
+        self.nameLabel = Label(self.center_frame, text=self.name)
         self.nameLabel.pack(side=TOP)
 
         self.developer = self.get_game_developer(self.data[self.dataIndex])
-        self.developerLabel = Label(center_frame, text="Developer: " + self.developer)
+        self.developerLabel = Label(self.center_frame, text="Developer: " + self.developer)
         self.developerLabel.pack(side=TOP)
 
         self.publisher = self.get_game_publisher(self.data[self.dataIndex])
-        self.publisherLabel = Label(center_frame, text="Publisher: " + self.publisher)
+        self.publisherLabel = Label(self.center_frame, text="Publisher: " + self.publisher)
         self.publisherLabel.pack(side=TOP)
         self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
-        self.positiveReviewsLabel = Label(center_frame, text="Positive Reviews: " + str(self.positiveReviews) + "%")
+        self.positiveReviewsLabel = Label(self.center_frame, text="Positive Reviews: " + str(self.positiveReviews) + "%")
         self.positiveReviewsLabel.pack(side=TOP)
 
-        scroll = Scrollbar(center_frame)
+        scroll = Scrollbar(self.center_frame)
         scroll.pack(side=RIGHT, fill=Y)
 
-        self.descriptionText = Text(center_frame, wrap=WORD, yscrollcommand=scroll.set, height= 7, width = 70)
+        self.descriptionText = Text(self.center_frame, wrap=WORD, yscrollcommand=scroll.set, height= 7, width = 70)
         self.description = self.get_game_description(self.data[self.dataIndex])
         self.descriptionText.insert(INSERT, self.description)
         self.descriptionText.pack(side=TOP)
 
-        self.refresh_button = Button(center_frame, text="Refresh", command=self.refresh)
-        self.refresh_button.pack()
-        self.refresh_button.pack_forget()
-        self.refresh_button
+        self.refresh_frame = Frame(self.root)
+        self.refresh_frame.pack(side=TOP, expand=True, fill=BOTH)
+
+        self.text_above_button = Label(self.refresh_frame, text = "Generate new recommendations")
+        self.refresh_button = Button(self.refresh_frame, text="Refresh", command=self.refresh, height= 3, width= 10)
+        self.text_below_button = Label(self.refresh_frame, text = "Generating this might take a few seconds")
+
 
         self.stars = [Button(stars_frame, text=" ★ ", fg="grey") for i in range(5)]
         for i in range(5):
@@ -132,12 +139,24 @@ class GREG:
 
     def refresh(self):
         self.choice_counter = 0
-        self.refresh_button.pack_forget() 
+        self.center_frame.pack(side=TOP, expand=True, fill=BOTH)
+        self.rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
+        self.text_above_button.pack_forget()
+        self.refresh_button.pack_forget()
+        self.text_below_button.pack_forget()
+        self.refresh_frame.pack_forget()
         self.update()
 
     def click(self, star_num):
         self.choice_counter += 1
         if self.choice_counter >= 3:
+            self.refresh_frame.pack()
+            self.text_above_button.pack()
+            self.refresh_button.pack()
+            self.text_below_button.pack()
+            self.center_frame.pack_forget()
+            self.rating_frame.pack_forget()
+
             self.refresh_button.pack() 
         print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
@@ -174,7 +193,7 @@ class GREG:
 
 def main():
     root = Tk()
-    root.minsize(550,200)
+    root.minsize(150,100)
     root.maxsize(550,1000)
     steamInfo = "Data\GameDictRaw.pkl"
     GREG(root, steamInfo)
