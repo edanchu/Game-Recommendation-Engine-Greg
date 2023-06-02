@@ -54,7 +54,6 @@ class GREG:
         rating_frame = Frame(self.root)
         rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
 
-        # Inner frame to hold the stars
         stars_frame = Frame(rating_frame)
         stars_frame.pack(expand=True)
 
@@ -141,11 +140,11 @@ class GREG:
         if self.choice_counter >= 3:
             self.refresh_button.pack() 
         print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
-        self.ratings_df = self.ratings_df.append({
+        self.ratings_df.loc[self.ratings_df.shape[0]] = {
             'uid': self.uid,
             'appid': self.data[self.dataIndex],
             'score': star_num + 1
-        }, ignore_index=True)
+        }
         self.update()
 
     def update(self):
@@ -156,7 +155,7 @@ class GREG:
 
         self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
 
-        self.descriptionText.delete('1.0', END)  # clear the existing description
+        self.descriptionText.delete('1.0', END) 
         self.description = self.get_game_description(self.data[self.dataIndex])
         self.descriptionText.insert(INSERT, self.description)
         self.descriptionText.pack(side=TOP)
