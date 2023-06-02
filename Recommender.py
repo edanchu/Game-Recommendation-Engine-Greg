@@ -28,7 +28,7 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
 
     appids = [loc2appid[apLoc] for apLoc in apLocs]
     # games = [gameDict[str(appid)]["name"] for appid in appids]
-    return appids
+    return appids, scores
 
 def main():
     userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
