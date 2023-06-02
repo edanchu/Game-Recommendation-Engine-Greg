@@ -5,6 +5,7 @@ from PIL import ImageTk, Image
 import pickle
 from html.parser import HTMLParser
 import CreateGameDB as game
+import pandas as pd
 
 class HTMLStripper(HTMLParser):
     def __init__(self):
@@ -25,6 +26,7 @@ def strip_html(html):
 
 class GREG:
     def __init__(self, root, pickle_file):
+        self.uid = 1
         self.dataIndex = 1
         self.photoImage = None
         self.imgLabel = None
@@ -34,7 +36,8 @@ class GREG:
         self.positiveReviewsLabel = None
         self.root = root
         self.data = self.read_pickle(pickle_file)  
-        
+        self.ratings_df = pd.DataFrame(columns=['uid', 'appid', 'score'])
+        self.choice_counter = 0  
         self.setupUI()
 
     def read_pickle(self, pickle_file):
@@ -82,6 +85,11 @@ class GREG:
         self.descriptionText.insert(INSERT, self.description)
         self.descriptionText.pack(side=TOP)
 
+        self.refresh_button = Button(center_frame, text="Refresh", command=self.refresh)
+        self.refresh_button.pack()
+        self.refresh_button.pack_forget()
+        self.refresh_button
+
         self.stars = [Button(stars_frame, text=" ★ ", fg="grey") for i in range(5)]
         for i in range(5):
             self.stars[i].pack(side=LEFT, padx=5)
@@ -123,8 +131,21 @@ class GREG:
         for star in self.stars:
             star.config(fg="grey")
 
+    def refresh(self):
+        self.choice_counter = 0
+        self.refresh_button.pack_forget() 
+        self.update()
+
     def click(self, star_num):
+        self.choice_counter += 1
+        if self.choice_counter >= 3:
+            self.refresh_button.pack() 
         print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
+        self.ratings_df = self.ratings_df.append({
+            'uid': self.uid,
+            'appid': self.data[self.dataIndex],
+            'score': star_num + 1
+        }, ignore_index=True)
         self.update()
 
     def update(self):
