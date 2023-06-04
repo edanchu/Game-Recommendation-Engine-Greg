@@ -43,7 +43,41 @@ class GREG:
         self.data = self.read_pickle(pickle_file)  
         self.ratings_df = pd.DataFrame(columns=['uid', 'appid', 'score'])
         self.three_plus_star_games = []
+        self.start_screen()
         self.choice_counter = 0  
+        # self.setupUI()
+
+
+    def start_screen(self):
+        self.start_frame = Frame(self.root)
+        self.start_frame.pack(side=TOP, expand=True, fill=BOTH)
+
+        self.starter_label = Label(self.start_frame, text="Welcome to GREG!", font=("Helvetica", 16))
+        self.starter_label.pack(side=TOP, pady=200)
+
+        self.button_frame = Frame(self.start_frame)
+        self.button_frame.pack(side=TOP)
+        
+        self.continue_button = Button(self.button_frame, text="Continue with current setup", command=self.continue_setup)
+        self.continue_button.pack(side=LEFT, padx=100)  
+
+        self.steam_id_frame = Frame(self.button_frame)
+        self.steam_id_frame.pack(side=LEFT, padx=100) 
+
+        self.steam_id_entry = Entry(self.steam_id_frame)
+        self.steam_id_entry.pack(side=TOP, padx=100, pady= 5)  
+        
+        self.steam_id_button = Button(self.steam_id_frame, text="Enter Steam ID", command=self.enter_steam_id)
+        self.steam_id_button.pack(side=TOP, padx=100)
+
+    def continue_setup(self):
+        self.start_frame.destroy()
+        self.setupUI()
+
+    def enter_steam_id(self):
+        self.steam_id = self.steam_id_entry.get()
+        self.start_frame.destroy()
+        # add here code to handle steam_id and fetch user's steam games
         self.setupUI()
 
     def read_pickle(self, pickle_file):
