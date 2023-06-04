@@ -87,9 +87,11 @@ class GREG:
 
         scroll = Scrollbar(self.center_frame)
         scroll.pack(side=RIGHT, fill=Y)
+        border_frame = Frame(self.center_frame, borderwidth=2, relief="groove")
+        border_frame.pack(side=TOP, padx=5, pady=5)
 
         self.description = self.get_game_description(self.data[self.dataIndex])
-        self.descriptionText = HTMLLabel(self.center_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 15, width = 100)
+        self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 15, width = 70)
         self.descriptionText.pack(side=TOP)
 
         spacer = Label(self.center_frame, height=1)
@@ -103,7 +105,7 @@ class GREG:
         self.text_below_button = Label(self.refresh_frame, text = "Generating this might take a few seconds")
 
 
-        self.stars = [Button(stars_frame, text=" ★ ", fg="grey",width= 3, height=2) for i in range(5)]
+        self.stars = [Button(stars_frame, text="   ★   ", fg="grey",width= 10, height=5) for i in range(5)]
         for i in range(5):
             self.stars[i].pack(side=LEFT, padx=5)
             self.stars[i].bind("<Enter>", lambda e, i=i: self.hover(i))
@@ -200,7 +202,7 @@ class GREG:
 
 def main():
     root = Tk()
-    root.minsize(150,100)
+    root.minsize(1280,720)
     root.maxsize(1280,720)
     steamInfo = "Data\GameDictRaw.pkl"
     GREG(root, steamInfo)
