@@ -9,23 +9,6 @@ import CreateGameDB as game
 import pandas as pd
 from tkhtmlview import HTMLLabel
 
-# class HTMLStripper(HTMLParser):
-#     def __init__(self):
-#         super().__init__()
-#         self.reset()
-#         self.fed = []
-
-#     def handle_data(self, data):
-#         self.fed.append(data)
-
-#     def get_data(self):
-#         return ''.join(self.fed)
-
-# def strip_html(html):
-#     html_stripper = HTMLStripper()
-#     html_stripper.feed(html)
-#     return html_stripper.get_data()
-
 class GREG:
     def __init__(self, root, pickle_file):
         self.uid = 1
@@ -57,7 +40,7 @@ class GREG:
 
         self.button_frame = Frame(self.start_frame)
         self.button_frame.pack(side=TOP)
-        
+
         self.continue_button = Button(self.button_frame, text="Continue with current setup", command=self.continue_setup)
         self.continue_button.pack(side=LEFT, padx=100)  
 
@@ -220,10 +203,11 @@ class GREG:
             self.refresh_button.pack() 
         print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
-            'uid': self.uid,
+            'uid': self.steam_id,
             'appid': self.data[self.dataIndex],
             'score': star_num + 1
         }
+        print(self.ratings_df)
         self.update()
 
     def update(self):
