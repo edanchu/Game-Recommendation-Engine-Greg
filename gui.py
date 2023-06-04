@@ -42,6 +42,7 @@ class GREG:
         self.root = root
         self.data = self.read_pickle(pickle_file)  
         self.ratings_df = pd.DataFrame(columns=['uid', 'appid', 'score'])
+        self.three_plus_star_games = []
         self.choice_counter = 0  
         self.setupUI()
 
@@ -104,6 +105,8 @@ class GREG:
         self.refresh_button = Button(self.refresh_frame, text="Refresh", command=self.refresh, height= 3, width= 10)
         self.text_below_button = Label(self.refresh_frame, text = "Generating this might take a few seconds")
 
+        self.print_button = Button(stars_frame, text="Print 3+ Star Games", command=self.print_three_plus_star_games)
+        self.print_button.pack(side=RIGHT)
 
         self.stars = [Button(stars_frame, text="   ★   ", fg="grey",width= 10, height=5) for i in range(5)]
         for i in range(5):
@@ -145,6 +148,18 @@ class GREG:
     def reset(self):
         for star in self.stars:
             star.config(fg="grey")
+    def print_three_plus_star_games(self):
+        for widget in self.root.winfo_children():
+            widget.destroy()
+        
+        output_frame = Frame(self.root)
+        output_frame.pack()
+
+        output_text = Text(output_frame)
+        output_text.insert(END, "Here are the games that you liked")
+        for game in self.three_plus_star_games:
+            output_text.insert(END, game + '\n')
+        output_text.pack()
 
     def refresh(self):
         self.choice_counter = 0
@@ -158,6 +173,8 @@ class GREG:
 
     def click(self, star_num):
         self.choice_counter += 1
+        if star_num + 1 >= 3:
+            self.three_plus_star_games.append(self.get_game_name(self.data[self.dataIndex]))
         if self.choice_counter >= 5:
             self.refresh_frame.pack()
             self.text_above_button.pack()
