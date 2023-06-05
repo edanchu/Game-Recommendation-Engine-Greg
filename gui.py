@@ -14,6 +14,7 @@ class GREG:
     def __init__(self, root, starting_games):
         self.uid = 1
         self.dataIndex = 0
+        self.list_len = len(starting_games)
         self.photoImage = None
         self.imgLabel = None
         self.developerLabel = None
@@ -198,7 +199,7 @@ class GREG:
         self.choice_counter += 1
         if star_num + 1 >= 3:
             self.three_plus_star_games.append(self.get_game_name(self.data[self.dataIndex]))
-        if self.choice_counter >= 5:
+        if self.choice_counter == self.list_len:
             self.refresh_frame.pack()
             self.text_above_button.pack()
             self.refresh_button.pack()
