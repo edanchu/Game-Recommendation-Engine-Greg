@@ -3,8 +3,12 @@ import pandas as pd
 import numpy as np
 import implicit
 import scipy
+import knn
 
-
+#uid = steam user id
+#interactionsSparse = dataframe of games and ratings in the form: user, appid, score
+#numRecs = how many games to return
+#returns list of tuples of games, predicted rating sorted by recommendation strength
 def getRecommendations(uid, interactionsSparse, numRecs = 100):
     userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
 
@@ -28,7 +32,7 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
 
     appids = [loc2appid[apLoc] for apLoc in apLocs]
     # games = [gameDict[str(appid)]["name"] for appid in appids]
-    return appids, scores
+    return knn.knn(uid, appids, 3, "cosine")
 
 def main():
     userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")

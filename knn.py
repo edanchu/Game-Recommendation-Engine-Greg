@@ -6,11 +6,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 #initial_df = predsDF.sort_values(by="score", ascending=False).head(30)
 #weight_selection = 0,1, or 2
 #similarity_selection = "euclidian", "cosine", or "dot"
-def knn(initial_df, weight_selection, similarity_selection):
+def knn(u, recs, weight_selection, similarity_selection):
 
-    userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
     gameFeatureMatrix = pd.read_pickle("Data\\gameFeatureMatrix.pkl")
     userInteractionsSparse = pd.read_pickle("Data\\userinteractionsSparse.pkl")
+    infile = open("Data\\GameDictRaw.pkl", "rb")
+    gameDict = pickle.load(infile)
+    infile.close()
 
     games_owned = userInteractionsSparse[userInteractionsSparse["user"] == u]["appid"].sort_values()
 
@@ -72,8 +74,8 @@ def knn(initial_df, weight_selection, similarity_selection):
     totals_row.iloc[:, 3223:] = totals_row.iloc[:, 3223:] * catW
 
     
-    recommendations = pd.DataFrame(gameFeatureMatrix, index = initial_df["appid"].tolist())
-    extra_info = pd.DataFrame (gameDict, index = initial_df["appid"].tolist())
+    recommendations = pd.DataFrame(gameFeatureMatrix, index = recs["appid"].tolist())
+    extra_info = pd.DataFrame (gameDict, index = recs["appid"].tolist())
     #print(extra_info.iloc[0])
 
     findict = {}
