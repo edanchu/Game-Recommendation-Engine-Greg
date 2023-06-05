@@ -70,7 +70,7 @@ class GREG:
             messagebox.showwarning("Private Account","Make sure your account is public. Please try again!")
             self.start_screen()
         else:
-            rec.getRecommendations(self.steam_id, userLib)
+            self.data = rec.getRecommendations(self.steam_id, userLib)
             self.setupUI()
         
 
