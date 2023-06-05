@@ -35,7 +35,7 @@ def getUserLibrary(user, genRatings = True):
 #interactionsSparse = dataframe of games and ratings in the form: user, appid, score
 #numRecs = how many games to return
 #returns list of tuples of games, predicted rating sorted by recommendation strength
-def getRecommendations(uid, interactionsSparse, numRecs = 100):
+def getRecommendations(uid, interactionsSparse, numRecs = 20):
     userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
 
     ui = userInteractionsDense.copy()
@@ -58,7 +58,7 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
 
     appids = [loc2appid[apLoc] for apLoc in apLocs]
     # games = [gameDict[str(appid)]["name"] for appid in appids]
-    return knn.knn(uid, appids, 3, "cosine")
+    return knn.knn(uid, [(appids[i], scores[i]) for i in range(len(apLocs))], 3, "cosine")
 
 def main():
     userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")

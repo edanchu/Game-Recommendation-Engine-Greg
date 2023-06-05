@@ -45,6 +45,7 @@ def knn(u, recs, weight_selection, similarity_selection):
         ratW = 5
         pltW = 4
         freW = 2
+        predW = 4
 
     elif(weight_selection == 1):
         devW = 8
@@ -54,15 +55,17 @@ def knn(u, recs, weight_selection, similarity_selection):
         ratW = 5
         pltW = 4
         freW = 2
+        predW = 4
 
     else:
-        devW = 6
+        devW = 3
         pubW = 2
         plaW = 1
-        catW = 10
-        ratW = 5
-        pltW = 4
+        catW = 6
+        ratW = 3
+        pltW = 0.01
         freW = 2
+        predW = 4
 
     #Developers
     totals_row.iloc[:, :1782] = totals_row.iloc[:, :1782] * devW
@@ -74,21 +77,21 @@ def knn(u, recs, weight_selection, similarity_selection):
     totals_row.iloc[:, 3223:] = totals_row.iloc[:, 3223:] * catW
 
     
-    recommendations = pd.DataFrame(gameFeatureMatrix, index = recs)
-    extra_info = pd.DataFrame (gameDict, index = recs)
+    # recommendations = pd.DataFrame(gameFeatureMatrix, index = recs[0])
+    # extra_info = pd.DataFrame (gameDict, index = recs[0])
     #print(extra_info.iloc[0])
 
     findict = {}
 
-    for i in range(recommendations.shape[0]):
-        first = recommendations.iloc[i]
+    for i in range(len(recs)):
+        first = gameFeatureMatrix.loc[recs[i][0]]
         
         try:
-            temp = extra_info.iloc[i]
-            positive = 0
-            negative = 0
-            avg_playtime = 0
-            is_free = 0
+            # temp = gameDict[str(recs[i][0])]
+            positive = gameDict[str(recs[i][0])]["positive"]
+            negative = gameDict[str(recs[i][0])]["negative"]
+            avg_playtime = gameDict[str(recs[i][0])]["median_playtime"]
+            is_free = gameDict[str(recs[i][0])]["is_free"]
         except:
             positive = 0
             negative = 0
@@ -96,29 +99,30 @@ def knn(u, recs, weight_selection, similarity_selection):
             is_free = 0
             
         #bias term (larger = better)
-        bias = ratW*(positive/(positive+negative+1)) + pltW*(avg_playtime) + freW*(is_free)
+        bias = ratW*(positive/(positive+negative+1)) + pltW*(avg_playtime) + freW*(is_free) + predW*recs[i][1]
         
         if(similarity_selection == "euclidian"):
             #euclidian norm
             rev = False
             sum_square_diff = (((first.T) - totals_row)**2).sum(axis=1)
-            findict.update({recommendations.index[i]:sum_square_diff.iloc[0] - bias})
+            sim = sum_square_diff.iloc[0]
         elif(similarity_selection == "cosine"):
             #cosine similarity
             rev = False
             cosine_sim = cosine_similarity(first.values.reshape(1, -1), totals_row.values)
             similarity_score = 1 - cosine_sim
-            findict.update({recommendations.index[i]: similarity_score[0][0] - bias})
+            sim = 1 - cosine_sim
         else:
             #dot similarity
             rev = True
             dot_similarity = np.dot(first, totals_row.iloc[0])
-            findict.update({recommendations.index[i]: dot_similarity + bias})
+            sim = dot_similarity
+        findict.update({recs[i][0]: sim + bias})
     
         
     #sorted dict of key value pairs, where keys represent appid
     #sorted from best recommendation to worst
-    j = {k: v for k, v in sorted(findict.items(), key=lambda item: item[1], reverse=rev)}
+    j = {k: v for k, v in sorted(findict.items(), key=lambda item: item[1], reverse=rev) if k not in id_list}
     sorted_keys = list(j.keys())
     return(sorted_keys)
 
