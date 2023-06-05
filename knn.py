@@ -74,8 +74,8 @@ def knn(u, recs, weight_selection, similarity_selection):
     totals_row.iloc[:, 3223:] = totals_row.iloc[:, 3223:] * catW
 
     
-    recommendations = pd.DataFrame(gameFeatureMatrix, index = recs["appid"].tolist())
-    extra_info = pd.DataFrame (gameDict, index = recs["appid"].tolist())
+    recommendations = pd.DataFrame(gameFeatureMatrix, index = recs)
+    extra_info = pd.DataFrame (gameDict, index = recs)
     #print(extra_info.iloc[0])
 
     findict = {}

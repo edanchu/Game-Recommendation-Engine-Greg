@@ -40,9 +40,9 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
 
     ui = userInteractionsDense.copy()
 
-    ui.loc[76561198229940716] = 0
+    ui.loc[uid] = 0
     for game, score in interactionsSparse[["appid", "score"]].to_numpy():
-        ui.loc[76561198229940716][game] = score if score >= 3 else 0
+        ui.loc[uid][game] = score if score >= 3 else 0
 
     # loc2uid = dict(zip(range(len(ui.index.tolist())), ui.index.tolist()))
     uid2loc = dict(zip(ui.index.tolist(), range(len(ui.index.tolist()))))
@@ -54,7 +54,7 @@ def getRecommendations(uid, interactionsSparse, numRecs = 100):
     model = implicit.bpr.BayesianPersonalizedRanking()
     model.fit(ssdf, show_progress=False)
 
-    apLocs, scores = model.recommend(uid2loc[uid], ssdf[uid2loc[uid]], numRecs)
+    apLocs, scores = model.recommend(uid2loc[uid], ssdf[uid2loc[uid]], numRecs, filter_already_liked_items=True)
 
     appids = [loc2appid[apLoc] for apLoc in apLocs]
     # games = [gameDict[str(appid)]["name"] for appid in appids]
