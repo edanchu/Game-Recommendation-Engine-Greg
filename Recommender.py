@@ -4,6 +4,29 @@ import numpy as np
 import implicit
 import scipy
 import knn
+import requests
+
+def getUserLibrary(user, genRatings = True):
+    f = open("Data\key")
+    key = f.read()
+    f.close()
+    response = requests.get("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key="+key+"&steamid="+user+"&format=json&include_played_free_games=true")
+    if response.status_code != 200:
+        return "Private"
+    dict = response.json()
+    # f = open("ExampleGames")
+    # dict = json.loads(f.read())
+    userHours = 0
+    games = {}
+    if "games" not in dict["response"]:
+        return "Private"
+    for game in dict["response"]["games"]:
+        games[game["appid"]] = game["playtime_forever"]
+        userHours += game["playtime_forever"]
+    if genRatings:
+        for game in games:
+            games[game] = games[game]/userHours
+    return games
 
 #uid = steam user id
 #interactionsSparse = dataframe of games and ratings in the form: user, appid, score
