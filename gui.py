@@ -194,6 +194,7 @@ class GREG:
     def refresh(self):
         self.data = rec.getRecommendations(self.steam_id, self.ratings_df)
         self.choice_counter = 0
+        self.dataIndex = 0
         self.center_frame.pack(side=TOP, expand=True, fill=BOTH)
         self.rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
         self.text_above_button.pack_forget()
