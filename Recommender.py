@@ -26,7 +26,10 @@ def getUserLibrary(user, genRatings = True):
     if genRatings:
         for game in games:
             games[game] = games[game]/userHours
-    return games
+    userInteractions = pd.DataFrame(columns=["user", "appid", "score"])
+    for i, game in enumerate(games):
+        userInteractions.loc[i] = [user, game, games[game]]
+    return userInteractions
 
 #uid = steam user id
 #interactionsSparse = dataframe of games and ratings in the form: user, appid, score
