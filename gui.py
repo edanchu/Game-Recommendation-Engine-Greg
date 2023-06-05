@@ -27,7 +27,7 @@ class GREG:
         self.refresh_frame = None
         self.root = root
         self.data = starting_games
-        self.ratings_df = pd.DataFrame(columns=['uid', 'appid', 'score'])
+        self.ratings_df = pd.DataFrame(columns=['user', 'appid', 'score'])
         self.three_plus_star_games = []
         self.choice_counter = 0  
         self.start_screen()
@@ -66,6 +66,7 @@ class GREG:
         self.steam_id = self.steam_id_entry.get()
         self.start_frame.destroy()
         userLib = rec.getUserLibrary(self.steam_id)
+        self.ratings_df = userLib
         if isinstance(userLib, str) and userLib == "Private":
             messagebox.showwarning("Private Account","Make sure your account is public. Please try again!")
             self.start_screen()
@@ -218,7 +219,7 @@ class GREG:
             self.refresh_button.pack() 
 
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
-            'uid': self.steam_id,
+            'user': self.steam_id,
             'appid': self.data[self.dataIndex],
             'score': star_num + 1
         }
