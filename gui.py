@@ -19,7 +19,7 @@ class GREG:
         self.photoImage = None
         self.imgLabel = None
         self.developerLabel = None
-        self.gameInfo = self.read_pickle("Data\GameDictRaw.pkl")
+        self.gameInfo = self.read_pickle("Data/GameDictRaw.pkl")
         self.publisherLabel = None
         self.positiveReviewsLabel = None
         self.center_frame = None
@@ -256,7 +256,7 @@ def main():
     root = Tk()
     root.minsize(1280,720)
     root.maxsize(1280,720)
-    steamInfo = "Data\GameDictRaw.pkl"
+    steamInfo = "Data/GameDictRaw.pkl"
     GREG(root, starting_games)
     root.mainloop()
 
