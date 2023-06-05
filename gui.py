@@ -41,7 +41,7 @@ class GREG:
         self.button_frame = Frame(self.start_frame)
         self.button_frame.pack(side=TOP)
 
-        self.continue_button = Button(self.button_frame, text="Continue with current setup", command=self.continue_setup)
+        self.continue_button = Button(self.button_frame, text="Start From Scratch", command=self.continue_setup)
         self.continue_button.pack(side=LEFT, padx=100)  
 
         self.steam_id_frame = Frame(self.button_frame)
@@ -55,6 +55,7 @@ class GREG:
 
     def continue_setup(self):
         self.start_frame.destroy()
+        self.steam_id = 1
         self.setupUI()
 
     def enter_steam_id(self):
@@ -104,12 +105,12 @@ class GREG:
         spacer.pack(side=TOP)
 
         scroll = Scrollbar(self.center_frame)
-        scroll.pack(side=RIGHT, fill=Y)
+        # scroll.pack(side=RIGHT, fill=Y)
         border_frame = Frame(self.center_frame, borderwidth=2, relief="groove")
         border_frame.pack(side=TOP, padx=5, pady=5)
 
         self.description = self.get_game_description(self.data[self.dataIndex])
-        self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 15, width = 70)
+        self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 35, width = 70)
         self.descriptionText.pack(side=TOP)
 
         spacer = Label(self.center_frame, height=1)
@@ -237,8 +238,8 @@ class GREG:
 
 def main():
     root = Tk()
-    root.minsize(1280,720)
-    root.maxsize(1280,720)
+    root.minsize(960,1080)
+    root.maxsize(1920,2000)
     steamInfo = "Data\GameDictRaw.pkl"
     GREG(root, steamInfo)
     root.mainloop()
