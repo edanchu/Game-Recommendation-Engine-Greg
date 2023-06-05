@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 import requests
 from io import BytesIO
 from PIL import ImageTk, Image
@@ -64,8 +65,14 @@ class GREG:
     def enter_steam_id(self):
         self.steam_id = self.steam_id_entry.get()
         self.start_frame.destroy()
-        # add here code to handle steam_id and fetch user's steam games
-        self.setupUI()
+        userLib = rec.getUserLibrary(self.steam_id)
+        if isinstance(userLib, str) and userLib == "Private":
+            messagebox.showwarning("Private Account","Make sure your account is public. Please try again!")
+            self.start_screen()
+        else:
+            rec.getRecommendations(self.steam_id, userLib)
+            self.setupUI()
+        
 
     def read_pickle(self, pickle_file):
         infile = open(pickle_file, "rb")
@@ -88,7 +95,7 @@ class GREG:
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+str(self.data[self.dataIndex])+"/header.jpg")
         self.imgLabel = Label(self.center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
-        #print(self.data[self.dataIndex])
+
         self.name = self.get_game_name(self.data[self.dataIndex])
         self.nameLabel = Label(self.center_frame, text=self.name, font=("Helvetica", 16))
         self.nameLabel.pack(side=TOP)
@@ -138,8 +145,8 @@ class GREG:
             self.stars[i].bind("<Button-1>", lambda e, i=i: self.click(i))
     
     def get_game_name(self, app_id):
-        print("app id", app_id)
         return self.gameInfo[str(app_id)]['name']
+    
     def get_game_description(self, app_id):
         return self.gameInfo[str(app_id)]['about_the_game']
     
@@ -208,7 +215,7 @@ class GREG:
             self.rating_frame.pack_forget()
 
             self.refresh_button.pack() 
-        print(f"for game id {self.data[self.dataIndex]} user chose {star_num + 1} stars")
+
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
             'uid': self.steam_id,
             'appid': self.data[self.dataIndex],
