@@ -264,7 +264,7 @@ def main():
     root.minsize(1280,720)
     root.maxsize(1280,720)
     steamInfo = "Data/GameDictRaw.pkl"
-    tc = ttk.Combobox(root, values=THEMES)
+    tc = ttk.Combobox(root, values=tuple(set(ttk.Style().theme_names()+tuple(THEMES))))
     tc.pack(anchor=SW)
     tc.set("Change theme")
     tc.bind("<<ComboboxSelected>>", lambda e: GREG.change_theme(root,tc.get()))
