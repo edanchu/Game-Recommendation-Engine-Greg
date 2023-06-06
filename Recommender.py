@@ -7,7 +7,7 @@ import knn
 import requests
 
 def getUserLibrary(user, genRatings = True):
-    f = open("Data\key")
+    f = open("Data/key")
     key = f.read()
     f.close()
     response = requests.get("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key="+key+"&steamid="+user+"&format=json&include_played_free_games=true")
@@ -36,7 +36,7 @@ def getUserLibrary(user, genRatings = True):
 #numRecs = how many games to return
 #returns list of tuples of games, predicted rating sorted by recommendation strength
 def getRecommendations(uid, interactionsSparse, numRecs = 20):
-    userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
+    userInteractionsDense = pd.read_pickle("Data/userInteractionsDense.pkl")
 
     ui = userInteractionsDense.copy()
 
@@ -61,10 +61,10 @@ def getRecommendations(uid, interactionsSparse, numRecs = 20):
     return knn.knn(uid, [(appids[i], scores[i]) for i in range(len(apLocs))], 3, "cosine")
 
 def main():
-    userInteractionsDense = pd.read_pickle("Data\\userInteractionsDense.pkl")
-    gameFeatureMatrix = pd.read_pickle("Data\\gameFeatureMatrix.pkl")
-    userInteractionsSparse = pd.read_pickle("Data\\userinteractionsSparse.pkl")
-    infile = open("Data\\GameDictRaw.pkl", "rb")
+    userInteractionsDense = pd.read_pickle("Data/userInteractionsDense.pkl")
+    gameFeatureMatrix = pd.read_pickle("Data/gameFeatureMatrix.pkl")
+    userInteractionsSparse = pd.read_pickle("Data/userinteractionsSparse.pkl")
+    infile = open("Data/GameDictRaw.pkl", "rb")
     gameDict = pickle.load(infile)
     infile.close()
     appids = getRecommendations(76561198199414039, userInteractionsSparse[userInteractionsSparse["user"] == 76561198199414039])

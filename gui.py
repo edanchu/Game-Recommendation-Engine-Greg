@@ -10,8 +10,9 @@ import CreateGameDB as game
 import pandas as pd
 from tkhtmlview import HTMLLabel
 import Recommender as rec
+from ttkthemes import ThemedTk, THEMES
 
-class GREG:
+class GREG():
     def __init__(self, root, starting_games):
         self.uid = 1
         self.dataIndex = 0
@@ -19,7 +20,7 @@ class GREG:
         self.photoImage = None
         self.imgLabel = None
         self.developerLabel = None
-        self.gameInfo = self.read_pickle("Data\GameDictRaw.pkl")
+        self.gameInfo = self.read_pickle("Data/GameDictRaw.pkl")
         self.publisherLabel = None
         self.positiveReviewsLabel = None
         self.center_frame = None
@@ -34,27 +35,32 @@ class GREG:
         
         # self.setupUI()
 
+    def change_theme(root, theme, e= None):
+        try:
+            root.set_theme(theme)
+        except:
+            pass
 
     def start_screen(self):
-        self.start_frame = Frame(self.root)
+        self.start_frame = ttk.Frame(self.root)
         self.start_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        self.starter_label = Label(self.start_frame, text="Welcome to GREG!", font=("Helvetica", 16))
+        self.starter_label = ttk.Label(self.start_frame, text="Welcome to GREG!", font=("Helvetica", 16))
         self.starter_label.pack(side=TOP, pady=200)
 
-        self.button_frame = Frame(self.start_frame)
+        self.button_frame = ttk.Frame(self.start_frame)
         self.button_frame.pack(side=TOP)
 
-        self.continue_button = Button(self.button_frame, text="Start From Scratch", command=self.continue_setup)
+        self.continue_button = ttk.Button(self.button_frame, text="Start From Scratch", command=self.continue_setup)
         self.continue_button.pack(side=LEFT, padx=100)  
 
-        self.steam_id_frame = Frame(self.button_frame)
+        self.steam_id_frame = ttk.Frame(self.button_frame)
         self.steam_id_frame.pack(side=LEFT, padx=100) 
 
-        self.steam_id_entry = Entry(self.steam_id_frame)
+        self.steam_id_entry = ttk.Entry(self.steam_id_frame)
         self.steam_id_entry.pack(side=TOP, padx=100, pady= 5)  
         
-        self.steam_id_button = Button(self.steam_id_frame, text="Enter Steam ID", command=self.enter_steam_id)
+        self.steam_id_button = ttk.Button(self.steam_id_frame, text="Enter Steam ID", command=self.enter_steam_id)
         self.steam_id_button.pack(side=TOP, padx=100)
 
     def continue_setup(self):
@@ -84,61 +90,61 @@ class GREG:
         #return [row for row in gamesDict]
 
     def setupUI(self):
-        self.center_frame = Frame(self.root)
+        self.center_frame = ttk.Frame(self.root)
         self.center_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        self.rating_frame = Frame(self.root)
+        self.rating_frame = ttk.Frame(self.root)
         self.rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
 
-        stars_frame = Frame(self.rating_frame)
+        stars_frame = ttk.Frame(self.rating_frame)
         stars_frame.pack(expand=True)
 
         self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+str(self.data[self.dataIndex])+"/header.jpg")
-        self.imgLabel = Label(self.center_frame, image=self.photoImage)
+        self.imgLabel = ttk.Label(self.center_frame, image=self.photoImage)
         self.imgLabel.pack(side=TOP)
 
         self.name = self.get_game_name(self.data[self.dataIndex])
-        self.nameLabel = Label(self.center_frame, text=self.name, font=("Helvetica", 16))
+        self.nameLabel = ttk.Label(self.center_frame, text=self.name, font=("Helvetica", 16))
         self.nameLabel.pack(side=TOP)
 
         self.developer = self.get_game_developer(self.data[self.dataIndex])
-        self.developerLabel = Label(self.center_frame, text="Developer: " + self.developer, font=("Helvetica", 12))
+        self.developerLabel = ttk.Label(self.center_frame, text="Developer: " + self.developer, font=("Helvetica", 12))
         self.developerLabel.pack(side=TOP)
 
         self.publisher = self.get_game_publisher(self.data[self.dataIndex])
-        self.publisherLabel = Label(self.center_frame, text="Publisher: " + self.publisher, font=("Helvetica", 12))
+        self.publisherLabel = ttk.Label(self.center_frame, text="Publisher: " + self.publisher, font=("Helvetica", 12))
         self.publisherLabel.pack(side=TOP)
 
         self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
-        self.positiveReviewsLabel = Label(self.center_frame, text="Positive Reviews: " + str(self.positiveReviews) + "%", font=("Helvetica", 12))
+        self.positiveReviewsLabel = ttk.Label(self.center_frame, text="Positive Reviews: " + str(self.positiveReviews) + "%", font=("Helvetica", 12))
         self.positiveReviewsLabel.pack(side=TOP)
 
-        spacer = Label(self.center_frame, height=1)
+        spacer = ttk.Label(self.center_frame, text='\n')
         spacer.pack(side=TOP)
 
-        scroll = Scrollbar(self.center_frame)
+        scroll = ttk.Scrollbar(self.center_frame)
         # scroll.pack(side=RIGHT, fill=Y)
-        border_frame = Frame(self.center_frame, borderwidth=2, relief="groove")
+        border_frame = ttk.Frame(self.center_frame, borderwidth=2, relief="groove")
         border_frame.pack(side=TOP, padx=5, pady=5)
 
         self.description = self.get_game_description(self.data[self.dataIndex])
         self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 15, width = 70)
         self.descriptionText.pack(side=TOP)
 
-        spacer = Label(self.center_frame, height=1)
+        spacer = ttk.Label(self.center_frame, text='\n')
         spacer.pack(side=TOP)
 
-        self.refresh_frame = Frame(self.root)
+        self.refresh_frame = ttk.Frame(self.root)
         self.refresh_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        self.text_above_button = Label(self.refresh_frame, text = "Generate new recommendations")
-        self.refresh_button = Button(self.refresh_frame, text="Refresh", command=self.refresh, height= 3, width= 10)
-        self.text_below_button = Label(self.refresh_frame, text = "Generating this might take a few seconds")
+        self.text_above_button = ttk.Label(self.refresh_frame, text = "Generate new recommendations")
+        self.refresh_button = ttk.Button(self.refresh_frame, text="Refresh", command=self.refresh, width= 10)
+        self.text_below_button = ttk.Label(self.refresh_frame, text = "Generating this might take a few seconds")
 
-        self.print_button = Button(stars_frame, text="Print 3+ Star Games", command=self.print_three_plus_star_games)
+        self.print_button = ttk.Button(stars_frame, text="Print 3+ Star Games", command=self.print_three_plus_star_games)
         self.print_button.pack(side=RIGHT)
 
-        self.stars = [Button(stars_frame, text="   ★   ", fg="grey",width= 10, height=5) for i in range(5)]
+        self.stars = [Button(stars_frame, text="   ★   ", height= 5, width= 10) for i in range(5)]
         for i in range(5):
             self.stars[i].pack(side=LEFT, padx=5)
             self.stars[i].bind("<Enter>", lambda e, i=i: self.hover(i))
@@ -183,7 +189,7 @@ class GREG:
         for widget in self.root.winfo_children():
             widget.destroy()
         
-        output_frame = Frame(self.root)
+        output_frame = ttk.Frame(self.root)
         output_frame.pack()
 
         output_text = Text(output_frame)
@@ -253,10 +259,15 @@ class GREG:
 
 def main():
     starting_games = [72850, 730, 1172470, 413150, 210970, 220, 8930, 214490, 1551360, 230410, 1222670]
-    root = Tk()
+    root = ThemedTk(themebg=True)
+    root.set_theme('blue')
     root.minsize(1280,720)
     root.maxsize(1280,720)
-    steamInfo = "Data\GameDictRaw.pkl"
+    steamInfo = "Data/GameDictRaw.pkl"
+    tc = ttk.Combobox(root, values=THEMES)
+    tc.pack(anchor=SW)
+    tc.set("Change theme")
+    tc.bind("<<ComboboxSelected>>", lambda e: GREG.change_theme(root,tc.get()))
     GREG(root, starting_games)
     root.mainloop()
 

@@ -47,7 +47,7 @@ def getGameInfo(game):
 
 #Uses cached database and dumps every 50 updates
 def main():
-    infile = open("Data\\UsersDict.pkl", "rb")
+    infile = open("Data/UsersDict.pkl", "rb")
     users = pickle.load(infile)
     infile.close()
 
