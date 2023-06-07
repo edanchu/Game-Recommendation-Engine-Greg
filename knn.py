@@ -64,7 +64,7 @@ def knn(u, recs, weight_selection, similarity_selection):
         catW = 6
         ratW = 3
         pltW = 0.01
-        freW = 2
+        freW = 1
         predW = 4
 
     #Developers
