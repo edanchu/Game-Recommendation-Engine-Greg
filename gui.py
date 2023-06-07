@@ -138,8 +138,8 @@ class GREG():
         self.refresh_frame.pack(side=TOP, expand=True, fill=BOTH)
 
         self.text_above_above_button = ttk.Label(self.refresh_frame, text = "You have rated 10 games!")
-        self.text_above_button = ttk.Label(self.refresh_frame, text = "Generating new recommendations")
-        self.refresh_button = ttk.Button(self.refresh_frame, text="Refresh", command=self.refresh, width= 10)
+        self.text_above_button = ttk.Label(self.refresh_frame, text = "Generate new recommendations")
+        self.refresh_button = ttk.Button(self.refresh_frame, text="Generate", command=self.refresh, width= 10)
         self.text_below_button = ttk.Label(self.refresh_frame, text = "Generating this might take a few seconds")
 
         self.print_button = ttk.Button(stars_frame, text="Print 3+ Star Games", command=self.print_three_plus_star_games)
@@ -226,7 +226,6 @@ class GREG():
             self.rating_frame.pack_forget()
 
             self.refresh_button.pack() 
-            self.refresh()
 
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
             'user': self.steam_id,
@@ -237,27 +236,28 @@ class GREG():
         self.update()
 
     def update(self):
-        self.dataIndex += 1
-        self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+str(self.data[self.dataIndex])+"/header.jpg")
+        if self.dataIndex < 10:
+            self.dataIndex += 1
+            self.photoImage = self.getImage("https://steamcdn-a.akamaihd.net/steam/apps/"+str(self.data[self.dataIndex])+"/header.jpg")
 
-        self.imgLabel.config(image=self.photoImage)
+            self.imgLabel.config(image=self.photoImage)
 
-        self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
+            self.nameLabel.config(text = self.get_game_name(self.data[self.dataIndex]))
 
-        self.descriptionText.delete('1.0', END) 
-        self.description = self.get_game_description(self.data[self.dataIndex])
-        self.descriptionText.set_html(self.description)
-        self.descriptionText.pack(side=TOP)
-        self.descriptionText.config(state= DISABLED)
+            self.descriptionText.delete('1.0', END) 
+            self.description = self.get_game_description(self.data[self.dataIndex])
+            self.descriptionText.set_html(self.description)
+            self.descriptionText.pack(side=TOP)
+            self.descriptionText.config(state= DISABLED)
 
-        self.developer = self.get_game_developer(self.data[self.dataIndex])
-        self.developerLabel.config(text="Developer: " + self.developer)
+            self.developer = self.get_game_developer(self.data[self.dataIndex])
+            self.developerLabel.config(text="Developer: " + self.developer)
 
-        self.publisher = self.get_game_publisher(self.data[self.dataIndex])
-        self.publisherLabel.config(text="Publisher: " + self.publisher)
+            self.publisher = self.get_game_publisher(self.data[self.dataIndex])
+            self.publisherLabel.config(text="Publisher: " + self.publisher)
 
-        self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
-        self.positiveReviewsLabel.config(text="Positive Reviews: " + str(self.positiveReviews) + "%")
+            self.positiveReviews = self.get_positive_review_percent(self.data[self.dataIndex])
+            self.positiveReviewsLabel.config(text="Positive Reviews: " + str(self.positiveReviews) + "%")
         
 
 
