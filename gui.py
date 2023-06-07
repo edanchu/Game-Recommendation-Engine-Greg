@@ -137,7 +137,8 @@ class GREG():
         self.refresh_frame = ttk.Frame(self.root)
         self.refresh_frame.pack(side=TOP, expand=True, fill=BOTH)
 
-        self.text_above_button = ttk.Label(self.refresh_frame, text = "Generate new recommendations")
+        self.text_above_above_button = ttk.Label(self.refresh_frame, text = "You have rated 10 games!")
+        self.text_above_button = ttk.Label(self.refresh_frame, text = "Generating new recommendations")
         self.refresh_button = ttk.Button(self.refresh_frame, text="Refresh", command=self.refresh, width= 10)
         self.text_below_button = ttk.Label(self.refresh_frame, text = "Generating this might take a few seconds")
 
@@ -204,6 +205,7 @@ class GREG():
         self.dataIndex = 0
         self.center_frame.pack(side=TOP, expand=True, fill=BOTH)
         self.rating_frame.pack(side=BOTTOM, expand=False, fill=BOTH)
+        self.text_above_above_button.pack_forget()
         self.text_above_button.pack_forget()
         self.refresh_button.pack_forget()
         self.text_below_button.pack_forget()
@@ -216,6 +218,7 @@ class GREG():
             self.three_plus_star_games.append(self.get_game_name(self.data[self.dataIndex]))
         if self.choice_counter == self.list_len:
             self.refresh_frame.pack()
+            self.text_above_above_button.pack()
             self.text_above_button.pack()
             self.refresh_button.pack()
             self.text_below_button.pack()
@@ -223,6 +226,7 @@ class GREG():
             self.rating_frame.pack_forget()
 
             self.refresh_button.pack() 
+            self.refresh()
 
         self.ratings_df.loc[self.ratings_df.shape[0]] = {
             'user': self.steam_id,
@@ -258,7 +262,7 @@ class GREG():
 
 
 def main():
-    starting_games = [72850, 730, 1172470, 413150, 210970, 220, 8930, 214490, 1551360, 230410, 1222670]
+    starting_games = [72850, 730, 1172470, 413150, 210970, 220, 8930, 214490, 1551360, 1222670]
     root = ThemedTk(themebg=True)
     root.set_theme('blue')
     root.minsize(1280,720)

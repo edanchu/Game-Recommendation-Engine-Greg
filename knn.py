@@ -8,9 +8,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 #similarity_selection = "euclidian", "cosine", or "dot"
 def knn(u, recs, weight_selection, similarity_selection):
 
-    gameFeatureMatrix = pd.read_pickle("Data\\gameFeatureMatrix.pkl")
-    userInteractionsSparse = pd.read_pickle("Data\\userinteractionsSparse.pkl")
-    infile = open("Data\\GameDictRaw.pkl", "rb")
+    gameFeatureMatrix = pd.read_pickle("Data/gameFeatureMatrix.pkl")
+    userInteractionsSparse = pd.read_pickle("Data/userinteractionsSparse.pkl")
+    infile = open("Data/GameDictRaw.pkl", "rb")
     gameDict = pickle.load(infile)
     infile.close()
 
