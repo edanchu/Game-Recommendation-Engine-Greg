@@ -77,7 +77,7 @@ class GREG():
             messagebox.showwarning("Private Account","Make sure your account is public. Please try again!")
             self.start_screen()
         else:
-            self.data = rec.getRecommendations(self.steam_id, userLib)
+            self.data = rec.getRecommendations(self.steam_id, userLib, isSteam=True)
             self.setupUI()
         
 
@@ -128,7 +128,7 @@ class GREG():
         border_frame.pack(side=TOP, padx=5, pady=5)
 
         self.description = self.get_game_description(self.data[self.dataIndex])
-        self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 15, width = 70)
+        self.descriptionText = HTMLLabel(border_frame, html= self.description, wrap=WORD, yscrollcommand=scroll.set, height= 35, width = 90)
         self.descriptionText.pack(side=TOP)
 
         spacer = ttk.Label(self.center_frame, text='\n')
@@ -260,9 +260,9 @@ class GREG():
 def main():
     starting_games = [72850, 730, 1172470, 413150, 210970, 220, 8930, 214490, 1551360, 230410, 1222670]
     root = ThemedTk(themebg=True)
-    root.set_theme('blue')
-    root.minsize(1280,720)
-    root.maxsize(1280,720)
+    root.set_theme('breeze')
+    root.minsize(1280,1000)
+    root.maxsize(1920,2000)
     steamInfo = "Data/GameDictRaw.pkl"
     tc = ttk.Combobox(root, values=THEMES)
     tc.pack(anchor=SW)

@@ -35,14 +35,14 @@ def getUserLibrary(user, genRatings = True):
 #interactionsSparse = dataframe of games and ratings in the form: user, appid, score
 #numRecs = how many games to return
 #returns list of tuples of games, predicted rating sorted by recommendation strength
-def getRecommendations(uid, interactionsSparse, numRecs = 20):
+def getRecommendations(uid, interactionsSparse, numRecs = 20, isSteam = False):
     userInteractionsDense = pd.read_pickle("Data/userInteractionsDense.pkl")
 
     ui = userInteractionsDense.copy()
 
     ui.loc[uid] = 0
     for game, score in interactionsSparse[["appid", "score"]].to_numpy():
-        ui.loc[uid][game] = score if score >= 3 else 0
+        ui.loc[uid][game] = score if score >= 3 or isSteam else 0
 
     # loc2uid = dict(zip(range(len(ui.index.tolist())), ui.index.tolist()))
     uid2loc = dict(zip(ui.index.tolist(), range(len(ui.index.tolist()))))
