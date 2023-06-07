@@ -54,8 +54,8 @@ def main():
     ###Be very careful with regeneration. Will take ~12 hours. Make backup before doing so
     ###Changing this will flush the cache and restart gathering data about all games from scratch
     DONOTCHANGETHISREGENERATE = False
-    if (os.path.isfile("Data/GameDictRaw.pkl") and not DONOTCHANGETHISREGENERATE):
-        infile = open("Data/GameDictRaw.pkl", "rb")
+    if (os.path.isfile("Data\\GameDictRaw.pkl") and not DONOTCHANGETHISREGENERATE):
+        infile = open("Data\\GameDictRaw.pkl", "rb")
         gamesDict = pickle.load(infile)
         infile.close()
     else:
@@ -88,7 +88,7 @@ def main():
                 #If an error code was returned from getGameInfo, dump current valid data and exit
                 if (type(res) == type(3)):
                     print(res)
-                    outfile = open("Data/GameDictRaw.pkl", "wb")
+                    outfile = open("Data\\GameDictRaw.pkl", "wb")
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
                     return(1)
@@ -103,13 +103,13 @@ def main():
                 #Dump the dict data every 50 iterations so not much data is lost on an error
                 if (len(gamesDict)%50 == 0):
                     print("dumping")
-                    outfile = open("Data/GameDictRaw.pkl", "wb")
+                    outfile = open("Data\\GameDictRaw.pkl", "wb")
                     pickle.dump(gamesDict, outfile)
                     outfile.close()
                 #sleep so that steam api doesn't block your ip
                 time.sleep(0.3)
         print("finished regenerating")
-        outfile = open("Data/GameDictRaw.pkl", "wb")
+        outfile = open("Data\\GameDictRaw.pkl", "wb")
         pickle.dump(gamesDict, outfile)
         outfile.close()
 
@@ -204,7 +204,7 @@ def main():
 
     print("writing")
     # gameFeatureMatrixDF.to_csv("Data\\gameFeatureMatrix.csv", sep=",")
-    outfile = open("Data/gameFeatureMatrix.pkl", "wb")
+    outfile = open("Data\\gameFeatureMatrix.pkl", "wb")
     pickle.dump(gameFeatureMatrixDF, outfile)
     outfile.close()
     
