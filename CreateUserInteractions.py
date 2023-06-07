@@ -51,12 +51,12 @@ def getCleanData(usersData, gameLocDict):
     return df
 
 def main():
-    infile = open("Data\\UsersDict.pkl", "rb")
+    infile = open("Data/UsersDict.pkl", "rb")
     users = pickle.load(infile)
     infile.close()
 
     # infile = open("Data\\GameFeatureMatrix.pkl")
-    gameFeatureMatrixDF = pd.read_pickle("Data\\GameFeatureMatrix.pkl")
+    gameFeatureMatrixDF = pd.read_pickle("Data/GameFeatureMatrix.pkl")
     # infile.close()
 
     gameLocs = {}
@@ -150,11 +150,11 @@ def main():
 
     print("writing")
     # userInteractionsDF.to_csv("Data\\userInteractionsDense.csv", sep=",")
-    outfile = open("Data\\userInteractionsDense.pkl", "wb")
+    outfile = open("Data/userInteractionsDense.pkl", "wb")
     pickle.dump(userInteractionsDF, outfile)
     outfile.close()
 
-    outfile = open("Data\\userInteractionsSparse.pkl", "wb")
+    outfile = open("Data/userInteractionsSparse.pkl", "wb")
     pickle.dump(userInteractionsSparseDF, outfile)
     outfile.close()
 
